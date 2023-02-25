@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../../models/user");
 const Blog = require("../../models/blog");
+const Comment = require("../../models/comment");
 const {
 	GraphQLObjectType,
 	GraphQLString,
@@ -19,6 +20,8 @@ const {
 	loginUser,
 	getBlogs,
 	createBlog,
+	getComments,
+	createComment,
 } = require("../resolvers");
 
 const UserType = new GraphQLObjectType({
@@ -33,6 +36,19 @@ const UserType = new GraphQLObjectType({
 				try {
 					let blogs = await Blog.find({ _id: { $in: user.blogs } });
 					return blogs;
+				} catch (err) {
+					throw err;
+				}
+			},
+		},
+		comments: {
+			type: new GraphQLList(CommentType),
+			resolve: async (user, args) => {
+				try {
+					let comments = await Comment.find({
+						_id: { $in: user.comments },
+					});
+					return comments;
 				} catch (err) {
 					throw err;
 				}
@@ -58,8 +74,52 @@ const BlogType = new GraphQLObjectType({
 				}
 			},
 		},
+		comments: {
+			type: new GraphQLList(CommentType),
+			resolve: async (blog, args) => {
+				try {
+					let comments = await Comment.find({
+						_id: { $in: blog.comments },
+					});
+					return comments;
+				} catch (err) {
+					throw err;
+				}
+			},
+		},
 		creation_date: { type: GraphQLString },
 	}),
+});
+
+const CommentType = new GraphQLObjectType({
+	name: "Comment",
+	fields: {
+		_id: { type: GraphQLID },
+		comment: { type: GraphQLString },
+		blog: {
+			type: BlogType,
+			resolve: async (comment, args) => {
+				try {
+					let blog = await Blog.findOne({ _id: comment.blog });
+					return blog;
+				} catch (err) {
+					throw err;
+				}
+			},
+		},
+		author: {
+			type: UserType,
+			resolve: async (comment, args) => {
+				try {
+					let user = await User.findOne({ _id: comment.author });
+					return user;
+				} catch (err) {
+					throw err;
+				}
+			},
+		},
+		creation_date: { type: GraphQLString },
+	},
 });
 
 const TokenType = new GraphQLObjectType({
@@ -76,6 +136,10 @@ const RootQuery = new GraphQLObjectType({
 		blogs: {
 			type: new GraphQLList(BlogType),
 			resolve: getBlogs,
+		},
+		comments: {
+			type: new GraphQLList(CommentType),
+			resolve: getComments,
 		},
 		users: {
 			type: new GraphQLList(UserType),
@@ -110,6 +174,14 @@ const RootMutation = new GraphQLObjectType({
 				content: { type: new GraphQLNonNull(GraphQLString) },
 			},
 			resolve: createBlog,
+		},
+		createComment: {
+			type: CommentType,
+			args: {
+				comment: { type: new GraphQLNonNull(GraphQLString) },
+				blog_id: { type: new GraphQLNonNull(GraphQLID) },
+			},
+			resolve: createComment,
 		},
 	},
 });
