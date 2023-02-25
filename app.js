@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const gApi = require("./graphql");
 const isAuth = require("./middleware/isAuth");
+const PORT = process.env.PORT || 5000;
 const app = expres();
 
 mongoose.connect(process.env.MONGODB_URI, {
@@ -22,6 +23,6 @@ app.get("/", (req, res) => {
 	});
 });
 
-app.listen(5000, () => {
-	console.log("server running at port => ", 5000);
+app.listen(PORT, () => {
+	console.log("server running at port => ", PORT);
 });
