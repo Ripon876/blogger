@@ -10,6 +10,14 @@ module.exports = {
 			throw err;
 		}
 	},
+	getBlogById: async (parent, args) => {
+		try {
+			let blog = await Blog.findOne({ _id: args.id });
+			return blog;
+		} catch (err) {
+			throw err;
+		}
+	},
 	getBlogs: async () => {
 		try {
 			let blogs = await Blog.find({});

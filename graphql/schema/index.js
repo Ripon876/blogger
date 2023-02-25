@@ -16,13 +16,16 @@ const {
 
 const {
 	getUser,
+	getUserById,
 	getUsers,
 	createUser,
 	loginUser,
 	getBlog,
+	getBlogById,
 	getBlogs,
 	getUserBlogs,
 	createBlog,
+	getCommentById,
 	getComments,
 	getBUComments,
 	createComment,
@@ -91,13 +94,34 @@ const TokenType = new GraphQLObjectType({
 const RootQuery = new GraphQLObjectType({
 	name: "RootQueryType",
 	fields: () => ({
+		blog: {
+			type: BlogType,
+			args: {
+				id: { type: new GraphQLNonNull(GraphQLID) },
+			},
+			resolve: getBlogById,
+		},
 		blogs: {
 			type: new GraphQLList(BlogType),
 			resolve: getBlogs,
 		},
+		comment: {
+			type: CommentType,
+			args: {
+				id: { type: new GraphQLNonNull(GraphQLID) },
+			},
+			resolve: getCommentById,
+		},
 		comments: {
 			type: new GraphQLList(CommentType),
 			resolve: getComments,
+		},
+		user: {
+			type: UserType,
+			args: {
+				id: { type: new GraphQLNonNull(GraphQLID) },
+			},
+			resolve: getUserById,
 		},
 		users: {
 			type: new GraphQLList(UserType),

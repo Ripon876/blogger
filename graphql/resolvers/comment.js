@@ -3,6 +3,14 @@ const Blog = require("../../models/blog");
 const Comment = require("../../models/comment");
 
 module.exports = {
+	getCommentById: async (parent, args) => {
+		try {
+			let comment = await Comment.findOne({ _id: args.id });
+			return comment;
+		} catch (err) {
+			throw err;
+		}
+	},
 	getComments: async () => {
 		try {
 			let comments = await Comment.find({});
