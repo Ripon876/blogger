@@ -150,7 +150,7 @@ const RootMutation = new GraphQLObjectType({
 			resolve: createUser,
 		},
 		createBlog: {
-			type: GraphQLBoolean,
+			type: BlogType,
 			args: {
 				title: { type: new GraphQLNonNull(GraphQLString) },
 				content: { type: new GraphQLNonNull(GraphQLString) },

@@ -51,7 +51,7 @@ module.exports = {
 
 			await blog.save();
 			await user.save();
-			return true;
+			return blog;
 		} catch (err) {
 			throw err;
 		}
