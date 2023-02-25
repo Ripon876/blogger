@@ -2,6 +2,14 @@ const User = require("../../models/user");
 const Blog = require("../../models/blog");
 
 module.exports = {
+	getBlog: async (comment, args) => {
+		try {
+			let blog = await Blog.findOne({ _id: comment.blog });
+			return blog;
+		} catch (err) {
+			throw err;
+		}
+	},
 	getBlogs: async () => {
 		try {
 			let blogs = await Blog.find({});

@@ -11,7 +11,16 @@ module.exports = {
 			throw err;
 		}
 	},
-
+	getBUComments: async (bu, args) => {
+		try {
+			let comments = await Comment.find({
+				_id: { $in: bu.comments },
+			});
+			return comments;
+		} catch (err) {
+			throw err;
+		}
+	},
 	createComment: async (parent, args, req) => {
 		try {
 			let comment = await new Comment({

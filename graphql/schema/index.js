@@ -15,12 +15,16 @@ const {
 } = require("graphql");
 
 const {
+	getUser,
 	getUsers,
 	createUser,
 	loginUser,
+	getBlog,
 	getBlogs,
+	getUserBlogs,
 	createBlog,
 	getComments,
+	getBUComments,
 	createComment,
 } = require("../resolvers");
 
@@ -32,27 +36,11 @@ const UserType = new GraphQLObjectType({
 		password: { type: GraphQLString },
 		blogs: {
 			type: new GraphQLList(BlogType),
-			resolve: async (user, args) => {
-				try {
-					let blogs = await Blog.find({ _id: { $in: user.blogs } });
-					return blogs;
-				} catch (err) {
-					throw err;
-				}
-			},
+			resolve: getUserBlogs,
 		},
 		comments: {
 			type: new GraphQLList(CommentType),
-			resolve: async (user, args) => {
-				try {
-					let comments = await Comment.find({
-						_id: { $in: user.comments },
-					});
-					return comments;
-				} catch (err) {
-					throw err;
-				}
-			},
+			resolve: getBUComments,
 		},
 	}),
 });
@@ -65,27 +53,11 @@ const BlogType = new GraphQLObjectType({
 		content: { type: GraphQLString },
 		author: {
 			type: UserType,
-			resolve: async (blog, args) => {
-				try {
-					let user = await User.findOne({ _id: blog.author });
-					return user;
-				} catch (err) {
-					throw err;
-				}
-			},
+			resolve: getUser,
 		},
 		comments: {
 			type: new GraphQLList(CommentType),
-			resolve: async (blog, args) => {
-				try {
-					let comments = await Comment.find({
-						_id: { $in: blog.comments },
-					});
-					return comments;
-				} catch (err) {
-					throw err;
-				}
-			},
+			resolve: getBUComments,
 		},
 		creation_date: { type: GraphQLString },
 	}),
@@ -98,25 +70,11 @@ const CommentType = new GraphQLObjectType({
 		comment: { type: GraphQLString },
 		blog: {
 			type: BlogType,
-			resolve: async (comment, args) => {
-				try {
-					let blog = await Blog.findOne({ _id: comment.blog });
-					return blog;
-				} catch (err) {
-					throw err;
-				}
-			},
+			resolve: getBlog,
 		},
 		author: {
 			type: UserType,
-			resolve: async (comment, args) => {
-				try {
-					let user = await User.findOne({ _id: comment.author });
-					return user;
-				} catch (err) {
-					throw err;
-				}
-			},
+			resolve: getUser,
 		},
 		creation_date: { type: GraphQLString },
 	},

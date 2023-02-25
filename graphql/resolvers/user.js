@@ -3,9 +3,9 @@ const User = require("../../models/user");
 const jwt = require("jsonwebtoken");
 
 module.exports = {
-	getUser: async (blog, args) => {
+	getUser: async (bc, args) => {
 		try {
-			let user = await User.findOne({ _id: blog.author });
+			let user = await User.findOne({ _id: bc.author });
 			return user;
 		} catch (err) {
 			throw err;
