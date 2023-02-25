@@ -1,7 +1,8 @@
 const expres = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 const gApi = require("./graphql");
-
+const isAuth = require("./middleware/isAuth");
 const app = expres();
 
 mongoose.connect(process.env.MONGODB_URI, {
@@ -10,6 +11,8 @@ mongoose.connect(process.env.MONGODB_URI, {
 });
 
 app.use(expres.json());
+app.use(cors());
+app.use(isAuth);
 
 gApi(app); // adding graphql api with express
 
