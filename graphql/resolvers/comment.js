@@ -22,6 +22,9 @@ module.exports = {
 		}
 	},
 	createComment: async (parent, args, req) => {
+		if (!req.isAuth) {
+			throw new Error("Unauthenticated , login and try again");
+		}
 		try {
 			let comment = await new Comment({
 				comment: args.comment,

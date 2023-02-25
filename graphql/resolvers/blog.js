@@ -27,7 +27,9 @@ module.exports = {
 		}
 	},
 	createBlog: async (parent, args, req) => {
-		console.log(req.user);
+		if (!req.isAuth) {
+			throw new Error("Unauthenticated , login and try again");
+		}
 		try {
 			let blog = await new Blog({
 				title: args.title,
