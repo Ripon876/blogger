@@ -5,6 +5,17 @@ const gApi = require("./graphql");
 const isAuth = require("./middleware/isAuth");
 const PORT = process.env.PORT || 5000;
 const app = expres();
+const server = require("http").createServer(app);
+const io = require("socket.io")(server, {
+	cors: {
+		origin: "http://localhost:3000",
+		methods: ["GET", "POST"],
+	},
+});
+
+io.on("connection", (socket) => {
+	console.log("new connection");
+});
 
 mongoose.connect(process.env.MONGODB_URI, {
 	useNewUrlparser: true,
@@ -23,6 +34,6 @@ app.get("/", (req, res) => {
 	});
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
 	console.log("server running at port => ", PORT);
 });

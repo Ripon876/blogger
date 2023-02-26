@@ -11,6 +11,22 @@ module.exports = {
 			throw err;
 		}
 	},
+	getMFUser: async (msg, args) => {
+		try {
+			let user = await User.findOne({ _id: msg.from });
+			return user;
+		} catch (err) {
+			throw err;
+		}
+	},
+	getMTUser: async (msg, args) => {
+		try {
+			let user = await User.findOne({ _id: msg.to });
+			return user;
+		} catch (err) {
+			throw err;
+		}
+	},
 	getUserById: async (parent, args) => {
 		try {
 			let user = await User.findOne({ _id: args.id });

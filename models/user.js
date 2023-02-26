@@ -21,6 +21,12 @@ const userSchema = new mongoose.Schema({
 			ref: "Comment",
 		},
 	],
+	threads: [
+		{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Thread",
+		},
+	],
 });
 
 const User = mongoose.model("User", userSchema);

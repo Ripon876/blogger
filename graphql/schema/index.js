@@ -3,6 +3,8 @@ const jwt = require("jsonwebtoken");
 const User = require("../../models/user");
 const Blog = require("../../models/blog");
 const Comment = require("../../models/comment");
+const Thread = require("../../models/thread");
+const Message = require("../../models/message");
 const {
 	GraphQLObjectType,
 	GraphQLString,
@@ -16,6 +18,8 @@ const {
 
 const {
 	getUser,
+	getMFUser,
+	getMTUser,
 	getUserById,
 	getUsers,
 	createUser,
@@ -44,6 +48,19 @@ const UserType = new GraphQLObjectType({
 		comments: {
 			type: new GraphQLList(CommentType),
 			resolve: getBUComments,
+		},
+		threads: {
+			type: new GraphQLList(ThreadType),
+			resolve: async (parent) => {
+				try {
+					let threads = await Thread.find({
+						_id: { $in: parent.threads },
+					});
+					return threads;
+				} catch (err) {
+					throw err;
+				}
+			},
 		},
 	}),
 });
@@ -80,6 +97,63 @@ const CommentType = new GraphQLObjectType({
 			resolve: getUser,
 		},
 		creation_date: { type: GraphQLString },
+	},
+});
+
+const MessageType = new GraphQLObjectType({
+	name: "Message",
+	fields: () => ({
+		from: {
+			type: UserType,
+			resolve: getMFUser,
+		},
+		to: {
+			type: UserType,
+			resolve: getMTUser,
+		},
+		message: { type: GraphQLString },
+		thread: {
+			type: ThreadType,
+			resolve: async (parent, args) => {
+				try {
+					let thread = await Thread.findOne({ _id: parent.thread });
+					return thread;
+				} catch (err) {
+					throw err;
+				}
+			},
+		},
+	}),
+});
+
+const ThreadType = new GraphQLObjectType({
+	name: "Thread",
+	fields: {
+		_id: { type: GraphQLID },
+		users: {
+			type: new GraphQLList(UserType),
+			resolve: async (parent, args) => {
+				try {
+					let users = await User.find({ _id: { $in: parent.users } });
+					return users;
+				} catch (err) {
+					throw err;
+				}
+			},
+		},
+		messages: {
+			type: new GraphQLList(MessageType),
+			resolve: async (parent, args) => {
+				try {
+					let messages = await Message.find({
+						_id: { $in: parent.messages },
+					});
+					return messages;
+				} catch (err) {
+					throw err;
+				}
+			},
+		},
 	},
 });
 
@@ -135,6 +209,17 @@ const RootQuery = new GraphQLObjectType({
 			},
 			resolve: loginUser,
 		},
+		threads: {
+			type: new GraphQLList(ThreadType),
+			resolve: async () => {
+				try {
+					let threads = await Thread.find({});
+					return threads;
+				} catch (err) {
+					throw err;
+				}
+			},
+		},
 	}),
 });
 
@@ -164,6 +249,59 @@ const RootMutation = new GraphQLObjectType({
 				blog_id: { type: new GraphQLNonNull(GraphQLID) },
 			},
 			resolve: createComment,
+		},
+		getThread: {
+			type: ThreadType,
+			args: {
+				users: { type: new GraphQLList(GraphQLID) },
+			},
+			resolve: async (parent, args) => {
+				try {
+					let thread = await Thread.findOne({
+						users: { $all: args.users },
+					});
+					if (!thread) {
+						console.log("creating thread");
+						thread = await new Thread({
+							users: args.users,
+						});
+						let users = await User.find({
+							_id: { $in: args.users },
+						});
+						users[0].threads.push(thread._id);
+						users[1].threads.push(thread._id);
+						await users[0].save();
+						await users[1].save();
+						await thread.save();
+					}
+					thread.messages = thread.messages.slice(-15);
+					return thread;
+				} catch (err) {
+					throw err;
+				}
+			},
+		},
+		createMessage: {
+			type: MessageType,
+			args: {
+				from: { type: new GraphQLNonNull(GraphQLID) },
+				to: { type: new GraphQLNonNull(GraphQLID) },
+				message: { type: new GraphQLNonNull(GraphQLString) },
+				thread: { type: new GraphQLNonNull(GraphQLID) },
+			},
+			resolve: async (__, args) => {
+				console.log(args);
+				try {
+					let msg = await new Message(args);
+					let thread = await Thread.findOne({ _id: args.thread });
+					thread.messages.push(msg._id);
+					await thread.save();
+					await msg.save();
+					return msg;
+				} catch (err) {
+					throw err;
+				}
+			},
 		},
 	},
 });
