@@ -255,7 +255,7 @@ const RootMutation = new GraphQLObjectType({
 			args: {
 				users: { type: new GraphQLList(GraphQLID) },
 			},
-			resolve: async (parent, args) => {
+			resolve: async (parent, args, req) => {
 				try {
 					let thread = await Thread.findOne({
 						users: { $all: args.users },
@@ -274,6 +274,7 @@ const RootMutation = new GraphQLObjectType({
 						await users[1].save();
 						await thread.save();
 					}
+
 					thread.messages = thread.messages.slice(-15);
 					return thread;
 				} catch (err) {
@@ -289,14 +290,18 @@ const RootMutation = new GraphQLObjectType({
 				message: { type: new GraphQLNonNull(GraphQLString) },
 				thread: { type: new GraphQLNonNull(GraphQLID) },
 			},
-			resolve: async (__, args) => {
-				console.log(args);
+			resolve: async (__, args, req) => {
 				try {
 					let msg = await new Message(args);
 					let thread = await Thread.findOne({ _id: args.thread });
 					thread.messages.push(msg._id);
 					await thread.save();
 					await msg.save();
+
+					let io = req.io;
+					console.log(msg);
+					io.to(args.to).emit("Msg", msg);
+
 					return msg;
 				} catch (err) {
 					throw err;
