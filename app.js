@@ -13,6 +13,8 @@ const io = require("socket.io")(server, {
 	},
 });
 
+const onlineUses = [];
+
 io.on("connection", (socket) => {
 	console.log("new connection");
 
