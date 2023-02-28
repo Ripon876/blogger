@@ -17,6 +17,6 @@ const messageSchema = new mongoose.Schema({
 		type: mongoose.Schema.Types.ObjectId,
 		ref: "Thread",
 	},
-});
+}); 
 
 module.exports = mongoose.model("Message", messageSchema);
